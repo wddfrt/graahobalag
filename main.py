@@ -9,11 +9,17 @@
 import pygame
 import math
 import random
+import draw
 
+
+
+# import module
+import draw
 
 ## Constant Variables
 
 spriteclass = pygame.sprite.Sprite
+Display = pygame.display
 PLAYERSIZE = 50
 FPS = 30
 
@@ -25,29 +31,13 @@ HEIGHT = 800
 BLACK = (0, 0, 0)
 WHITE = (255,255,255)
 
+# Lists
 
 
 # Screen Setups
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
 pygame.display.set_caption("Asteroid") # Caption
-
-
-# Uploading Images 
-# Ship for Player 1
-shippic1 = pygame.image.load('mcqueen.png')
-shipimg1 = pygame.transform.scale(shippic1, (PLAYERSIZE, PLAYERSIZE))
-
-## Ship for Player 2
-shippic2 = pygame.image.load('download.png')
-shipimg2 = pygame.transform.scale(shippic2, (PLAYERSIZE, PLAYERSIZE))
-
-# Asteroid Image
-asteroidimg = pygame.image.load('woman.png')
-
-# Background image
-bgpic = pygame.image.load('bg.jpg')
-bgimg = pygame.transform.scale(bgpic, (WIDTH, HEIGHT))
 
 
 # Classes
@@ -63,6 +53,7 @@ class Players(spriteclass):
 
     # Image & Initial Angle (forward)
     self.img = img
+    self.rect = self.img.get_rect()
     self.angle = 0
 
     # Size and initial speed
@@ -74,6 +65,7 @@ class Players(spriteclass):
   def moveLeft(self):
     self.x -= self.speed
     self.angle = 90
+    self.img = pygame.transform.rotate(self.img, self.angle)
 
 
   # Function to move right
@@ -111,13 +103,15 @@ class Asteroids(spriteclass):
 
     # Chooses if the asteroid will be placed along the x axis or the y axis randomly
     if x:
-      self.posx = random.randint(0, WIDTH)
-      self.posy = random.randrange(0, HEIGHT, HEIGHT)
-
+      self.posx = random.randint(0, WIDTH - self.size)
+      self.posy = random.choice([self.size, HEIGHT])
     else:
-      self.posy = random.randint(0, HEIGHT)
-      self.posx = random.randrange(0, WIDTH, WIDTH)
+      self.posy = random.randint(self.size, HEIGHT)
+      self.posx = random.choice([0, WIDTH - self.size])
 
+      
+  def draw(self):
+    draw.DrawImage(display, )
 
 
 # Bullets Class
@@ -130,7 +124,6 @@ class Bullets(spriteclass):
     pass
 
 
-
 # Powerups Class
 class Powerups(spriteclass):
   PowerupTable = []
@@ -140,11 +133,11 @@ class Powerups(spriteclass):
     pass
     
 
+
 # Updates Display
 while True:
 
-  # Sets background image
-  screen.blit(bgimg, (0,0))
+  draw
 
 
   for event in pygame.event.get():
@@ -161,6 +154,7 @@ while True:
 
   # Asteroid Spawn
   
+  # spawns an asteroid every 0.5 seconds
   if pygame.time.get_ticks() - Asteroids.lasttick > 500:
     Asteroids()
           
