@@ -170,3 +170,4 @@ while True:
   # Updates Screen
   pygame.time.Clock().tick(FPS)
   pygame.display.update()
+  print("penispenis")
