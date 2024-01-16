@@ -9,12 +9,12 @@
 import pygame
 import math
 import random
-import draw
-
-
 
 # import module
-import draw
+import bruh
+import drawings
+
+bruh.asdf()
 
 ## Constant Variables
 
@@ -30,6 +30,18 @@ HEIGHT = 800
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255,255,255)
+
+# Images 
+
+# Ship for Player 1
+shipimg1 = pygame.image.load('mcqueen.png')
+## Ship for Player 2
+shipimg2 = pygame.image.load('download.png')
+# Asteroid Image
+asteroidimg = pygame.image.load('woman.png')
+# Background image
+bgimg1 = pygame.image.load('bg.jpg')
+
 
 # Lists
 
@@ -103,15 +115,14 @@ class Asteroids(spriteclass):
 
     # Chooses if the asteroid will be placed along the x axis or the y axis randomly
     if x:
-      self.posx = random.randint(0, WIDTH - self.size)
-      self.posy = random.choice([self.size, HEIGHT])
+      self.x = random.randint(0, WIDTH - self.size)
+      self.y = random.choice([self.size, HEIGHT])
     else:
-      self.posy = random.randint(self.size, HEIGHT)
-      self.posx = random.choice([0, WIDTH - self.size])
+      self.y = random.randint(self.size, HEIGHT)
+      self.x = random.choice([0, WIDTH - self.size])
 
-      
   def draw(self):
-    draw.DrawImage(display, )
+    drawings.DrawImage(Display, asteroidimg, self.x, self.y)
 
 
 # Bullets Class
@@ -133,16 +144,18 @@ class Powerups(spriteclass):
     pass
     
 
+# Creates image size constants
+drawings.Resize(bgimg1, WIDTH, HEIGHT)
 
 # Updates Display
 while True:
 
-  draw
-
-
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
           pygame.quit()
+
+  
+  drawings.DrawImage(screen, "BG1", 0,0)
 
 
   # Player 1 and 2 movement
@@ -156,12 +169,13 @@ while True:
   
   # spawns an asteroid every 0.5 seconds
   if pygame.time.get_ticks() - Asteroids.lasttick > 500:
-    Asteroids()
+    t = Asteroids()
+    t.draw()
           
   # Powerup spawn
   
   
   # Updates Screen
   pygame.time.Clock().tick(FPS)
-  pygame.display.update()
+  Display.update()
   print("penispenis")
