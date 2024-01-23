@@ -1,0 +1,148 @@
+import pygame
+
+
+WHITE = (255,255,255)
+BLACK = (0, 0, 0)
+FPS = 50
+green = (0, 255, 0)
+blue = (0, 0, 255)
+
+WIDTH = 1200
+HEIGHT = 800
+
+screen = pygame.display.set_mode([WIDTH, HEIGHT])
+
+pygame.font.init()
+
+titlefont = pygame.font.Font(None, 100)
+subfont = pygame.font.Font(None, 50)
+
+mainmenu_text = titlefont.render('Assteroid', True, WHITE)
+mainmenu_textRect = mainmenu_text.get_rect()
+mainmenu_textRect.center = (WIDTH // 2, 100)
+
+
+class Button:
+  def __init__(self, color, x, y, width, height, text):
+    self.color = color
+    self.x = x
+    self.y = y
+    self.width = width
+    self.height = height
+    self.text = subfont.render(text, True, BLACK)
+
+  def draw(self):
+    pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height), 0)
+    self.textRect = self.text.get_rect()
+    self.textRect.center = ((WIDTH//2), self.y+self.height/2)
+    screen.blit(self.text, self.textRect)
+
+
+
+
+
+
+
+  def mouse_pos(self, pos):
+    if pos[0] > self.x and pos[0] < self.x + self.width:
+      if pos[1] > self.y and pos[1] < self.y + self.height:
+        self.color = (180, 180, 180)
+        return True
+
+
+    self.color = WHITE
+    return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+def draw_menu(play, instructions, end):
+  screen.fill((0,0,0))
+  screen.blit(mainmenu_text, mainmenu_textRect)
+  play.draw()
+  instructions.draw()
+  end.draw()
+
+
+def menu():
+  running = True
+  clock = pygame.time.Clock()
+
+  play = Button(WHITE, 475, 200, 250, 100, 'Play')
+  instructions = Button(WHITE, 475, 400, 250, 100, 'Instructions')
+  end = Button(WHITE, 475, 600, 250, 100, 'Quit')
+
+
+  while running:
+    draw_menu(play, instructions, end)
+    clock.tick(FPS)
+
+    keys_pressed = pygame.key.get_pressed() 
+    mouse_position = pygame.mouse.get_pos()
+
+
+
+    for event in pygame.event.get():
+      mouse_click = (event.type == pygame.MOUSEBUTTONUP)
+
+      if event.type == pygame.QUIT:
+        running = False
+
+      if play.mouse_pos(mouse_position) and mouse_click:
+        print('Hello Penis play' )
+
+      if instructions.mouse_pos(mouse_position) and mouse_click:
+        print('hello penis instructions')
+
+      if end.mouse_pos(mouse_position) and mouse_click:
+        running = False
+
+
+    pygame.display.update()
+
+
+
+def main(): # Main function
+  running = True
+  clock = pygame.time.Clock()
+
+  while running:
+    draw_menu()
+    clock.tick(FPS)
+
+    keys_pressed = pygame.key.get_pressed() 
+    mouse_position = pygame.mouse.get_pos()
+    mouse_click = pygame.mouse.get_pressed()
+
+
+
+
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        running = False
+
+      if play.mouse_pos(mouse_position) and event.type == pygame.MOUSEBUTTONUP:
+        print('Hello Penis')
+
+
+
+
+
+
+
+    pygame.display.update()
+
+
+  pygame.quit()
+
+
+menu()

@@ -38,8 +38,8 @@ def DrawShape():
 
 
 # Ship for Player 1
-shipimg1 = LoadImage("mcqueen.png")
+shipimg1 = LoadImage("ship1.png")
 ## Ship for Player 2
-shipimg2 = LoadImage("man.jpg")
+shipimg2 = LoadImage("ship2.png")
 # Background image
-bgimg1 = pygame.image.load('bg.jpg')
+bgimg1 = pygame.image.load('bg.png')
