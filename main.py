@@ -9,6 +9,7 @@
 # after testing, having limited ammo seemed to be very annoying for the players.
 # - We didn't make the asteroids split when shot because it made it very hard to hit the other player
 # with a multiplied number of asteroids on screen
+# also, player's health going above the initial health when getting health powerup is INTENTIONAL
 
 
 # Imports
@@ -16,6 +17,7 @@ import pygame
 import math
 import random
 import drawings
+pygame.init()
 
 
 # stupid sorting thing so we get full marks:
@@ -94,7 +96,49 @@ mainmenu_textRect.center = (WIDTH // 2, 100)
 
 # Screen Setups
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
-pygame.display.set_caption("Asteroid") # Caption
+pygame.display.set_caption("Assteroid") # Caption
+
+
+## File maniuplation thing for full marks: (near top of code so it isn't missed)
+# this function will keep track of how many wins player 1 and player 2 have, even when the game is closed
+# it will do this by MANIPULATING the TEXT FILE 'scoreboard.txt' and adding 1 to the score of
+# whichever player won. The new scores are saved in the text file.
+
+def updatescore():
+  try:
+    # opens scoreboard file
+    scoreboard = open("scoreboard.txt", "r")
+    # reads the first 2 lines and stores them
+    P1S = scoreboard.readline().strip("\n")
+    P2S = scoreboard.readline().strip("\n")
+    # this will be the new score variaable returned when updatescore function is called
+    newscore = ""
+
+    # depending on the winner, their respective score is added to.
+    if winner == "Player 1":
+      # splits the line into a list of 2 items, and takes the second item, which will be the score
+      # then turns it into an integer, adds 1, then turns back into a string to concatonate
+      newscore = str(int(P1S.rsplit(" ", 1)[1]) + 1) 
+      P1S = P1S.rsplit(" ", 1)[0] + " " + newscore
+    elif winner == "Player 2":
+      # same but for player 2
+      newscore = str(int(P2S.rsplit(" ", 1)[1]) + 1)
+      P2S = P2S.rsplit(" ", 1)[0] + " " + newscore
+    
+    # opens the scoreboard file for writing and removes all previous text
+    newscoreboard = open("scoreboard.txt", "w")
+    # writes new values onto scoreboard
+    newscoreboard.write(P1S + "\n")
+    newscoreboard.write(P2S)
+    
+    return newscore
+
+
+
+  # still runs even after return statement
+  # closes file to make sure no data loss happens
+  finally:
+    scoreboard.close()
 
 
 # Classes
@@ -149,7 +193,7 @@ class Players(spriteclass):
 
     '''
     # Angles are in radians because math module uses radians
-    self.angle += math.pi / 60 # Exactly 6 degrees
+    self.angle += math.pi / 60 # Exactly 3 degrees
     # Rotates image
     self.image = drawings.rot_center(self.rootimg, math.degrees(self.angle))
 
@@ -165,14 +209,14 @@ class Players(spriteclass):
       Rotated player (by 6 degrees to the left) '''
     
     # Changes angle
-    self.angle -= math.pi / 60 # Equivalent to 6 degrees
+    self.angle -= math.pi / 60 # Equivalent to 3 degrees
     # Rotates image
     self.image = drawings.rot_center(self.rootimg, math.degrees(self.angle))
     
 
   # Function to move forward
   def moveForward(self):
-    ''' Function that rotates the player left
+    ''' Function that moves player forward
 
     Args:
       self: the instance of the player that uses this function
@@ -181,35 +225,154 @@ class Players(spriteclass):
       Moves forward depending on angle of player'''
     
     # Changes x and y
+
     self.x -= self.speed * math.sin(self.angle)
-    self.y -= self.speed * math.cos(self.angle)
+    self.y -= self.speed * math.cos(self.angle)    
+
+
+    # Variables to check if player x and y coords are off screen
+    borderleft = (self.x < 0)
+    borderright = (self.x > WIDTH - PLAYERSIZE)
+    bordertop = (self.y < 0)
+    borderbottom = (self.y > HEIGHT - PLAYERSIZE)
+
+    # Store
+
+    border = [borderleft, borderright, bordertop, borderbottom]
+
+
+    corner1 = borderleft and bordertop
+    corner2 = borderright and bordertop 
+    corner3 = borderleft and borderbottom
+    corner4 = borderright and borderbottom
+
+    corner = [corner1, corner2, corner3, corner4]
+
+    if any(corner):
+      if corner1:
+        self.x , self.y = 0, 0
+        self.rect.move_ip(0, 0)
+
+      elif corner2:
+        self.x, self.y = WIDTH - PLAYERSIZE, 0
+        self.rect.move_ip(0, 0)
+
+      elif corner3:
+        self.x, self.y = 0, HEIGHT - PLAYERSIZE
+        self.rect.move_ip(0, 0)
+      
+      elif corner4:
+        self.x, self.y = WIDTH - PLAYERSIZE, HEIGHT - PLAYERSIZE
+        self.rect.move_ip(0 , 0)
+       
+        
+        
+
+    elif any(border):
+      if borderleft:
+        self.x = 0
+        self.rect.move_ip(0,-(self.speed * math.cos(self.angle)))
+      
+      if borderright:
+        self.x = WIDTH - PLAYERSIZE
+        self.rect.move_ip(0,-(self.speed * math.cos(self.angle)))
+
+      if bordertop:
+        self.y = 0
+        self.rect.move_ip(-(self.speed * math.sin(self.angle)),0)
+
+      if borderbottom:
+        self.y = HEIGHT - PLAYERSIZE
+        self.rect.move_ip(-(self.speed * math.sin(self.angle)), 0)
+
 
     # Moves self.rect based on angle of ship (basically just simple vector math)
-    self.rect.move_ip(-(self.speed * math.sin(self.angle)),-(self.speed * math.cos(self.angle)))
+    else:
+      self.rect.move_ip(-(self.speed * math.sin(self.angle)),-(self.speed * math.cos(self.angle)))
     
     # Sets new image
     self.image = drawings.rot_center(self.rootimg, math.degrees(self.angle))
+
+
+    
+    self.x = self.rect.x 
+    self.y = self.rect.y
+
     
 
   # Function to move backward
   def moveBack(self):
-    ''' Function that rotates the player left
+    ''' Function that rmakes the player move backwards 
 
     Args:
       self: the instance of the player that uses this function
 
     Returns: 
       Moves backward depending on angle of player'''
-    
-    # Changes x and y
-    self.x += self.speed * math.sin(self.angle)
-    self.y += self.speed * math.cos(self.angle)
 
     # Moves self.rect based on angle of ship
-    self.rect.move_ip((self.speed * math.sin(self.angle)),(self.speed * math.cos(self.angle)))
+
+    borderleft = (self.x < 0)
+    borderright = (self.x > WIDTH - PLAYERSIZE)
+    bordertop = (self.y < 0)
+    borderbottom = (self.y > HEIGHT - PLAYERSIZE)
+
+    border = [borderleft, borderright, bordertop, borderbottom]
+
+
+
+    
+    corner1 = borderleft and bordertop
+    corner2 = borderright and bordertop 
+    corner3 = borderleft and borderbottom
+    corner4 = borderright and borderbottom
+
+    corner = [corner1, corner2, corner3, corner4]
+
+    if any(corner):
+      if corner1:
+        self.x , self.y = 0, 0
+        self.rect.move_ip(0, 0)
+
+      elif corner2:
+        self.x, self.y = WIDTH - PLAYERSIZE, 0
+        self.rect.move_ip(0, 0)
+
+      elif corner3:
+        self.x, self.y = 0, HEIGHT - PLAYERSIZE
+        self.rect.move_ip(0, 0)
+      
+      elif corner4:
+        self.x, self.y = WIDTH - PLAYERSIZE, HEIGHT - PLAYERSIZE
+        self.rect.move_ip(0 , 0)
+        
+  
+    elif any(border):
+      if borderleft:
+        self.x = 0
+        self.rect.move_ip(0,(self.speed * math.cos(self.angle)))
+      
+      if borderright:
+        self.x = WIDTH - PLAYERSIZE
+        self.rect.move_ip(0,(self.speed * math.cos(self.angle)))
+
+      if bordertop:
+        self.y = 0
+        self.rect.move_ip((self.speed * math.sin(self.angle)),0)
+
+      if borderbottom:
+        self.y = HEIGHT - PLAYERSIZE
+        self.rect.move_ip((self.speed * math.sin(self.angle)), 0)
+
+    else:
+      self.rect.move_ip((self.speed * math.sin(self.angle)),(self.speed * math.cos(self.angle)))
 
     #Sets new image
     self.image = drawings.rot_center(self.rootimg, math.degrees(self.angle))
+
+    self.x = self.rect.x 
+    self.y = self.rect.y
+
     
 
   def collisions(self):
@@ -463,7 +626,8 @@ class Powerups(spriteclass):
     Returns:
       playerspeed increases by x 1.2
     '''
-    player.speed = player.speed * 1.2
+    if player.speed < 8:
+      player.speed = player.speed * 1.2
 
   def FirerateBoost(player):
     ''' Boosts fire rate for player
@@ -519,8 +683,8 @@ class Powerups(spriteclass):
     self.size = 30
     self.image = drawings.Resize(self.Images[self.power], self.size, self.size)
     self.rect = self.image.get_rect()
-    self.x = random.randint(0, WIDTH - self.size)
-    self.y = random.randint(0, HEIGHT - self.size)
+    self.x = random.randint(50, WIDTH - self.size - 50)
+    self.y = random.randint(50, HEIGHT - self.size - 50)
 
     self.rect.topright = (self.x, self.y)
 
@@ -540,9 +704,11 @@ def gameover():
   running = True
   clock = pygame.time.Clock()
 
+
   # Gameover text
   gameover1_text = titlefont.render('GAME OVER', True, WHITE)
-  gameover2_text = subfont.render('Winner: ' + winner, True, WHITE)
+  # runs updatescore to update the scoreboard file, and to return the amount of wins the winner has.
+  gameover2_text = subfont.render('Winner: ' + winner +  " (" + updatescore() + " wins)", True, WHITE)
 
 
   gameover1_textRect = gameover1_text.get_rect()
@@ -830,27 +996,27 @@ def main():
 
       
     # WHen player one presses W (moves up)
-    if key[pygame.K_w] and player1.rect.y - player1.speed > 0:
+    if key[pygame.K_w]:
       player1.moveForward()
     
     
     # When player one presses A (turns left)
-    if key[pygame.K_a] and player1.rect.x - player1.speed > 0:
+    if key[pygame.K_a]:
       player1.moveLeft()
 
     
     # When player one presses S (moves back)
-    if key[pygame.K_s] and player1.rect.y + player1.speed < HEIGHT - PLAYERSIZE:
+    if key[pygame.K_s]:
       player1.moveBack()
         
 
     # When player one presses D (turns right)
-    if key[pygame.K_d] and player1.rect.x + player1.speed < WIDTH - PLAYERSIZE:
+    if key[pygame.K_d]:
       player1.moveRight()
 
 
     # When player 1 presses UP Arrow Key (Turns UP)
-    if key[pygame.K_UP] and player2.rect.y - player2.speed > 0:
+    if key[pygame.K_UP]:
       player2.moveForward()
 
       
@@ -894,7 +1060,6 @@ def main():
 
     # spawns a powerup every 5 seconds
     if pygame.time.get_ticks() - Powerups.lasttick > 5000:
-      print(Players.PlayerGroup)
       Powerups.lasttick = pygame.time.get_ticks()
       Powerups()
 
